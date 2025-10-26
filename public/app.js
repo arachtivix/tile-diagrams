@@ -6,8 +6,9 @@ class TileDiagram {
         this.squareSize = 50;
         this.tiles = []; // Array of placed tiles
         this.xMarkers = []; // Array of X markers
+        this.outlines = []; // Array of outline lines
         this.selectedSquare = null; // First square selected for tile placement
-        this.mode = 'tile'; // Current mode: 'tile' or 'x'
+        this.mode = 'tile'; // Current mode: 'tile', 'x', or 'outline'
         this.currentObjectColor = '#4CAF50'; // Current color for new objects
         this.svg = document.getElementById('canvas');
         this.colors = {
@@ -89,6 +90,7 @@ class TileDiagram {
     resetGrid() {
         this.tiles = [];
         this.xMarkers = [];
+        this.outlines = [];
         this.selectedSquare = null;
         this.renderGrid();
     }
@@ -96,9 +98,11 @@ class TileDiagram {
     clearTiles() {
         this.tiles = [];
         this.xMarkers = [];
+        this.outlines = [];
         this.selectedSquare = null;
         this.renderTiles();
         this.renderXMarkers();
+        this.renderOutlines();
     }
     
     renderGrid() {
@@ -153,12 +157,26 @@ class TileDiagram {
         // Render existing tiles and X markers on top
         this.renderTiles();
         this.renderXMarkers();
+        this.renderOutlines();
     }
     
     handleSquareClick(row, col) {
         if (this.mode === 'x') {
             // X mode - toggle X marker
             this.toggleXMarker(row, col);
+        } else if (this.mode === 'outline') {
+            // Outline mode - create line between two clicks
+            if (!this.selectedSquare) {
+                // First square selected
+                this.selectedSquare = { row, col };
+                this.highlightSquare(row, col, true);
+            } else {
+                // Second square selected - create outline
+                this.createOutline(this.selectedSquare.row, this.selectedSquare.col, row, col);
+                this.highlightSquare(this.selectedSquare.row, this.selectedSquare.col, false);
+                this.selectedSquare = null;
+                this.renderOutlines();
+            }
         } else {
             // Tile mode - check if this square is already part of a tile or has an X
             if (this.isSquareOccupied(row, col)) {
@@ -356,6 +374,44 @@ class TileDiagram {
             g.appendChild(line1);
             g.appendChild(line2);
             this.svg.appendChild(g);
+        });
+    }
+    
+    createOutline(row1, col1, row2, col2) {
+        // Calculate center points of the two squares
+        const x1 = col1 * this.squareSize + this.squareSize / 2;
+        const y1 = row1 * this.squareSize + this.squareSize / 2;
+        const x2 = col2 * this.squareSize + this.squareSize / 2;
+        const y2 = row2 * this.squareSize + this.squareSize / 2;
+        
+        const outline = {
+            x1: x1,
+            y1: y1,
+            x2: x2,
+            y2: y2,
+            color: this.currentObjectColor
+        };
+        this.outlines.push(outline);
+    }
+    
+    renderOutlines() {
+        // Remove existing outline elements
+        const existingOutlines = this.svg.querySelectorAll('.outline');
+        existingOutlines.forEach(outline => outline.remove());
+        
+        // Draw each outline
+        this.outlines.forEach(outline => {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', outline.x1);
+            line.setAttribute('y1', outline.y1);
+            line.setAttribute('x2', outline.x2);
+            line.setAttribute('y2', outline.y2);
+            line.setAttribute('stroke', outline.color);
+            line.setAttribute('stroke-width', '3');
+            line.setAttribute('stroke-linecap', 'round');
+            line.setAttribute('class', 'outline');
+            
+            this.svg.appendChild(line);
         });
     }
     
