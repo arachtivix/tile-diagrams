@@ -1,7 +1,8 @@
 // Tile Diagrams Application
 class TileDiagram {
     constructor() {
-        this.gridSize = 8;
+        this.gridWidth = 8;
+        this.gridHeight = 8;
         this.squareSize = 50;
         this.tiles = []; // Array of placed tiles
         this.xMarkers = []; // Array of X markers
@@ -32,9 +33,15 @@ class TileDiagram {
             });
         });
         
-        // Grid size change
-        document.getElementById('gridSize').addEventListener('change', (e) => {
-            this.gridSize = parseInt(e.target.value);
+        // Grid width change
+        document.getElementById('gridWidth').addEventListener('change', (e) => {
+            this.gridWidth = parseInt(e.target.value);
+            this.resetGrid();
+        });
+        
+        // Grid height change
+        document.getElementById('gridHeight').addEventListener('change', (e) => {
+            this.gridHeight = parseInt(e.target.value);
             this.resetGrid();
         });
         
@@ -99,14 +106,15 @@ class TileDiagram {
         this.svg.innerHTML = '';
         
         // Set SVG size
-        const totalSize = this.gridSize * this.squareSize;
-        this.svg.setAttribute('width', totalSize);
-        this.svg.setAttribute('height', totalSize);
-        this.svg.setAttribute('viewBox', `0 0 ${totalSize} ${totalSize}`);
+        const totalWidth = this.gridWidth * this.squareSize;
+        const totalHeight = this.gridHeight * this.squareSize;
+        this.svg.setAttribute('width', totalWidth);
+        this.svg.setAttribute('height', totalHeight);
+        this.svg.setAttribute('viewBox', `0 0 ${totalWidth} ${totalHeight}`);
         
         // Create checkerboard
-        for (let row = 0; row < this.gridSize; row++) {
-            for (let col = 0; col < this.gridSize; col++) {
+        for (let row = 0; row < this.gridHeight; row++) {
+            for (let col = 0; col < this.gridWidth; col++) {
                 const square = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
                 const x = col * this.squareSize;
                 const y = row * this.squareSize;

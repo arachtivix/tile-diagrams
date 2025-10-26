@@ -6,7 +6,7 @@ Interactive web tool for creating SVG diagrams of 2x1 tiles as rounded rectangle
 
 - **Interactive Tile Placement**: Click on adjacent squares to place 2x1 tiles
 - **Customizable Colors**: Change tile colors, stroke colors, and checkerboard colors
-- **Adjustable Grid Size**: Configure grid dimensions from 4x4 to 20x20
+- **Adjustable Board Dimensions**: Configure board width and height independently (4-20 for each dimension)
 - **Export Options**: 
   - Save diagram as SVG file
   - Copy SVG to clipboard
