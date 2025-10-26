@@ -60,6 +60,22 @@ The project structure:
   - `app.js` - Application logic
   - `styles.css` - Styling
 
+## Accessibility
+
+This application includes comprehensive accessibility features:
+- Full keyboard navigation support (Tab to navigate, Enter/Space to select)
+- ARIA labels for all interactive elements
+- Focus indicators for keyboard users
+- Screen reader compatible
+
+## Security Note
+
+This application is designed for local development and personal use on localhost. If you plan to deploy this application to a public server, please implement additional security measures:
+- Add rate limiting to prevent abuse
+- Implement authentication if needed
+- Use HTTPS for secure connections
+- Review and update dependencies regularly
+
 ## License
 
 MIT
