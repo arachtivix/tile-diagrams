@@ -385,10 +385,10 @@ class TileDiagram {
         const y2 = row2 * this.squareSize + this.squareSize / 2;
         
         const outline = {
-            x1: x1,
-            y1: y1,
-            x2: x2,
-            y2: y2,
+            x1,
+            y1,
+            x2,
+            y2,
             color: this.currentObjectColor
         };
         this.outlines.push(outline);
