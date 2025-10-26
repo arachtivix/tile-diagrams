@@ -378,17 +378,23 @@ class TileDiagram {
     }
     
     createOutline(row1, col1, row2, col2) {
-        // Calculate center points of the two squares
-        const x1 = col1 * this.squareSize + this.squareSize / 2;
-        const y1 = row1 * this.squareSize + this.squareSize / 2;
-        const x2 = col2 * this.squareSize + this.squareSize / 2;
-        const y2 = row2 * this.squareSize + this.squareSize / 2;
+        // Calculate the bounding rectangle for the selected region
+        const minRow = Math.min(row1, row2);
+        const maxRow = Math.max(row1, row2);
+        const minCol = Math.min(col1, col2);
+        const maxCol = Math.max(col1, col2);
+        
+        // Calculate rectangle position and size
+        const x = minCol * this.squareSize;
+        const y = minRow * this.squareSize;
+        const width = (maxCol - minCol + 1) * this.squareSize;
+        const height = (maxRow - minRow + 1) * this.squareSize;
         
         const outline = {
-            x1,
-            y1,
-            x2,
-            y2,
+            x,
+            y,
+            width,
+            height,
             color: this.currentObjectColor
         };
         this.outlines.push(outline);
@@ -401,17 +407,17 @@ class TileDiagram {
         
         // Draw each outline
         this.outlines.forEach(outline => {
-            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            line.setAttribute('x1', outline.x1);
-            line.setAttribute('y1', outline.y1);
-            line.setAttribute('x2', outline.x2);
-            line.setAttribute('y2', outline.y2);
-            line.setAttribute('stroke', outline.color);
-            line.setAttribute('stroke-width', '3');
-            line.setAttribute('stroke-linecap', 'round');
-            line.setAttribute('class', 'outline');
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('x', outline.x);
+            rect.setAttribute('y', outline.y);
+            rect.setAttribute('width', outline.width);
+            rect.setAttribute('height', outline.height);
+            rect.setAttribute('fill', 'none');
+            rect.setAttribute('stroke', outline.color);
+            rect.setAttribute('stroke-width', '3');
+            rect.setAttribute('class', 'outline');
             
-            this.svg.appendChild(line);
+            this.svg.appendChild(rect);
         });
     }
     
