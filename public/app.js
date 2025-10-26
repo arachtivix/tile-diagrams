@@ -4,10 +4,12 @@ class TileDiagram {
         this.gridSize = 8;
         this.squareSize = 50;
         this.tiles = []; // Array of placed tiles
+        this.xMarkers = []; // Array of X markers
         this.selectedSquare = null; // First square selected for tile placement
+        this.mode = 'tile'; // Current mode: 'tile' or 'x'
+        this.currentObjectColor = '#4CAF50'; // Current color for new objects
         this.svg = document.getElementById('canvas');
         this.colors = {
-            tile: '#4CAF50',
             stroke: '#2E7D32',
             checkerLight: '#F0D9B5',
             checkerDark: '#B58863'
@@ -18,6 +20,18 @@ class TileDiagram {
     }
     
     initializeEventListeners() {
+        // Mode change
+        document.querySelectorAll('input[name="mode"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                this.mode = e.target.value;
+                // Clear selection when switching modes
+                if (this.selectedSquare) {
+                    this.highlightSquare(this.selectedSquare.row, this.selectedSquare.col, false);
+                    this.selectedSquare = null;
+                }
+            });
+        });
+        
         // Grid size change
         document.getElementById('gridSize').addEventListener('change', (e) => {
             this.gridSize = parseInt(e.target.value);
@@ -29,10 +43,9 @@ class TileDiagram {
             this.resetGrid();
         });
         
-        // Color pickers
-        document.getElementById('tileColor').addEventListener('input', (e) => {
-            this.colors.tile = e.target.value;
-            this.renderTiles();
+        // Object color picker
+        document.getElementById('objectColor').addEventListener('input', (e) => {
+            this.currentObjectColor = e.target.value;
         });
         
         document.getElementById('strokeColor').addEventListener('input', (e) => {
@@ -68,14 +81,17 @@ class TileDiagram {
     
     resetGrid() {
         this.tiles = [];
+        this.xMarkers = [];
         this.selectedSquare = null;
         this.renderGrid();
     }
     
     clearTiles() {
         this.tiles = [];
+        this.xMarkers = [];
         this.selectedSquare = null;
         this.renderTiles();
+        this.renderXMarkers();
     }
     
     renderGrid() {
@@ -126,36 +142,73 @@ class TileDiagram {
             }
         }
         
-        // Render existing tiles on top
+        // Render existing tiles and X markers on top
         this.renderTiles();
+        this.renderXMarkers();
     }
     
     handleSquareClick(row, col) {
-        // Check if this square is already part of a tile
-        if (this.isSquareOccupied(row, col)) {
-            this.showStatus('This square is already occupied by a tile!', false);
+        if (this.mode === 'x') {
+            // X mode - toggle X marker
+            this.toggleXMarker(row, col);
+        } else {
+            // Tile mode - check if this square is already part of a tile or has an X
+            if (this.isSquareOccupied(row, col)) {
+                this.showStatus('This square is already occupied!', false);
+                return;
+            }
+            
+            if (!this.selectedSquare) {
+                // First square selected
+                this.selectedSquare = { row, col };
+                this.highlightSquare(row, col, true);
+            } else {
+                // Second square selected - check if adjacent
+                if (this.areAdjacent(this.selectedSquare.row, this.selectedSquare.col, row, col)) {
+                    // Create tile
+                    this.createTile(this.selectedSquare.row, this.selectedSquare.col, row, col);
+                    this.highlightSquare(this.selectedSquare.row, this.selectedSquare.col, false);
+                    this.selectedSquare = null;
+                    this.renderTiles();
+                } else {
+                    // Not adjacent, select this as new first square
+                    this.highlightSquare(this.selectedSquare.row, this.selectedSquare.col, false);
+                    this.selectedSquare = { row, col };
+                    this.highlightSquare(row, col, true);
+                }
+            }
+        }
+    }
+    
+    toggleXMarker(row, col) {
+        // Check if square is occupied by a tile
+        const isTileHere = this.tiles.some(tile => 
+            tile.squares.some(sq => sq.row === row && sq.col === col)
+        );
+        
+        if (isTileHere) {
+            this.showStatus('Cannot place X on a tile!', false);
             return;
         }
         
-        if (!this.selectedSquare) {
-            // First square selected
-            this.selectedSquare = { row, col };
-            this.highlightSquare(row, col, true);
+        // Check if X marker already exists at this position
+        const existingIndex = this.xMarkers.findIndex(
+            marker => marker.row === row && marker.col === col
+        );
+        
+        if (existingIndex >= 0) {
+            // Remove existing X marker
+            this.xMarkers.splice(existingIndex, 1);
         } else {
-            // Second square selected - check if adjacent
-            if (this.areAdjacent(this.selectedSquare.row, this.selectedSquare.col, row, col)) {
-                // Create tile
-                this.createTile(this.selectedSquare.row, this.selectedSquare.col, row, col);
-                this.highlightSquare(this.selectedSquare.row, this.selectedSquare.col, false);
-                this.selectedSquare = null;
-                this.renderTiles();
-            } else {
-                // Not adjacent, select this as new first square
-                this.highlightSquare(this.selectedSquare.row, this.selectedSquare.col, false);
-                this.selectedSquare = { row, col };
-                this.highlightSquare(row, col, true);
-            }
+            // Add new X marker with current color
+            this.xMarkers.push({
+                row: row,
+                col: col,
+                color: this.currentObjectColor
+            });
         }
+        
+        this.renderXMarkers();
     }
     
     areAdjacent(row1, col1, row2, col2) {
@@ -167,9 +220,17 @@ class TileDiagram {
     }
     
     isSquareOccupied(row, col) {
-        return this.tiles.some(tile => 
+        // Check if occupied by tile
+        const isTile = this.tiles.some(tile => 
             tile.squares.some(sq => sq.row === row && sq.col === col)
         );
+        
+        // Check if occupied by X marker
+        const isX = this.xMarkers.some(marker => 
+            marker.row === row && marker.col === col
+        );
+        
+        return isTile || isX;
     }
     
     createTile(row1, col1, row2, col2) {
@@ -177,7 +238,8 @@ class TileDiagram {
             squares: [
                 { row: row1, col: col1 },
                 { row: row2, col: col2 }
-            ]
+            ],
+            color: this.currentObjectColor // Store color with the tile
         };
         this.tiles.push(tile);
     }
@@ -238,12 +300,54 @@ class TileDiagram {
             rect.setAttribute('height', height);
             rect.setAttribute('rx', 8);
             rect.setAttribute('ry', 8);
-            rect.setAttribute('fill', this.colors.tile);
+            rect.setAttribute('fill', tile.color); // Use tile's stored color
             rect.setAttribute('stroke', this.colors.stroke);
             rect.setAttribute('stroke-width', '3');
             rect.setAttribute('class', 'tile');
             
             this.svg.appendChild(rect);
+        });
+    }
+    
+    renderXMarkers() {
+        // Remove existing X marker elements
+        const existingMarkers = this.svg.querySelectorAll('.x-marker');
+        existingMarkers.forEach(marker => marker.remove());
+        
+        // Draw each X marker
+        this.xMarkers.forEach(marker => {
+            const centerX = marker.col * this.squareSize + this.squareSize / 2;
+            const centerY = marker.row * this.squareSize + this.squareSize / 2;
+            const size = this.squareSize * 0.6; // X takes up 60% of square
+            const offset = size / 2;
+            
+            // Create group for X
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.setAttribute('class', 'x-marker');
+            
+            // First line of X (top-left to bottom-right)
+            const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line1.setAttribute('x1', centerX - offset);
+            line1.setAttribute('y1', centerY - offset);
+            line1.setAttribute('x2', centerX + offset);
+            line1.setAttribute('y2', centerY + offset);
+            line1.setAttribute('stroke', marker.color); // Use marker's stored color
+            line1.setAttribute('stroke-width', '4');
+            line1.setAttribute('stroke-linecap', 'round');
+            
+            // Second line of X (top-right to bottom-left)
+            const line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line2.setAttribute('x1', centerX + offset);
+            line2.setAttribute('y1', centerY - offset);
+            line2.setAttribute('x2', centerX - offset);
+            line2.setAttribute('y2', centerY + offset);
+            line2.setAttribute('stroke', marker.color); // Use marker's stored color
+            line2.setAttribute('stroke-width', '4');
+            line2.setAttribute('stroke-linecap', 'round');
+            
+            g.appendChild(line1);
+            g.appendChild(line2);
+            this.svg.appendChild(g);
         });
     }
     
