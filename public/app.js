@@ -107,9 +107,20 @@ class TileDiagram {
                 square.setAttribute('class', 'square');
                 square.setAttribute('data-row', row);
                 square.setAttribute('data-col', col);
+                square.setAttribute('tabindex', '0');
+                square.setAttribute('role', 'button');
+                square.setAttribute('aria-label', `Square at row ${row + 1}, column ${col + 1}`);
                 
                 // Click event for tile placement
                 square.addEventListener('click', () => this.handleSquareClick(row, col));
+                
+                // Keyboard event for accessibility
+                square.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.handleSquareClick(row, col);
+                    }
+                });
                 
                 this.svg.appendChild(square);
             }
@@ -260,24 +271,17 @@ class TileDiagram {
         try {
             const svgContent = this.svg.outerHTML;
             
-            // Try using the Clipboard API
+            // Use modern Clipboard API
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 await navigator.clipboard.writeText(svgContent);
                 this.showStatus('SVG copied to clipboard!', true);
             } else {
-                // Fallback for older browsers
-                const textarea = document.createElement('textarea');
-                textarea.value = svgContent;
-                textarea.style.position = 'fixed';
-                textarea.style.opacity = '0';
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                this.showStatus('SVG copied to clipboard!', true);
+                // If clipboard API not available, show manual copy instructions
+                this.showStatus('Please use browser "Copy" command to copy the SVG', false);
+                console.warn('Clipboard API not available');
             }
         } catch (err) {
-            this.showStatus('Failed to copy to clipboard', false);
+            this.showStatus('Copy failed. Please check browser permissions.', false);
             console.error('Copy failed:', err);
         }
     }

@@ -146,6 +146,12 @@ button:active {
     opacity: 0.8;
 }
 
+/* Square focus effect for keyboard navigation */
+.square:focus {
+    outline: 3px solid #ff9800;
+    outline-offset: -3px;
+}
+
 /* Selected square for tile placement */
 .square.selected {
     stroke: #ff9800 !important;
