@@ -9,13 +9,71 @@ class TileDiagram {
         this.outlines = []; // Array of outline lines
         this.selectedSquare = null; // First square selected for tile placement
         this.mode = 'tile'; // Current mode: 'tile', 'x', or 'outline'
-        this.currentObjectColor = '#4CAF50'; // Current color for new objects
-        this.svg = document.getElementById('canvas');
+        
+        // Separate colors for each component type
         this.colors = {
-            stroke: '#2E7D32',
+            tile: '#4CAF50',
+            tileStroke: '#2E7D32',
+            x: '#E91E63',
+            outline: '#2196F3',
             checkerLight: '#F0D9B5',
             checkerDark: '#B58863'
         };
+        
+        // Color presets
+        this.colorPresets = {
+            custom: null, // User's custom colors
+            forest: {
+                tile: '#4CAF50',
+                tileStroke: '#2E7D32',
+                x: '#8BC34A',
+                outline: '#689F38',
+                checkerLight: '#F0F4E8',
+                checkerDark: '#C5E1A5'
+            },
+            ocean: {
+                tile: '#2196F3',
+                tileStroke: '#0D47A1',
+                x: '#03A9F4',
+                outline: '#00BCD4',
+                checkerLight: '#E1F5FE',
+                checkerDark: '#81D4FA'
+            },
+            sunset: {
+                tile: '#FF9800',
+                tileStroke: '#E65100',
+                x: '#FF5722',
+                outline: '#FFC107',
+                checkerLight: '#FFF3E0',
+                checkerDark: '#FFCC80'
+            },
+            lavender: {
+                tile: '#9C27B0',
+                tileStroke: '#4A148C',
+                x: '#E91E63',
+                outline: '#673AB7',
+                checkerLight: '#F3E5F5',
+                checkerDark: '#CE93D8'
+            },
+            autumn: {
+                tile: '#D84315',
+                tileStroke: '#BF360C',
+                x: '#F4511E',
+                outline: '#FF6F00',
+                checkerLight: '#FBE9E7',
+                checkerDark: '#FFAB91'
+            },
+            monochrome: {
+                tile: '#424242',
+                tileStroke: '#000000',
+                x: '#757575',
+                outline: '#9E9E9E',
+                checkerLight: '#FFFFFF',
+                checkerDark: '#E0E0E0'
+            }
+        };
+        
+        this.svg = document.getElementById('canvas');
         
         this.initializeEventListeners();
         this.renderGrid();
@@ -32,6 +90,14 @@ class TileDiagram {
                     this.selectedSquare = null;
                 }
             });
+        });
+        
+        // Color preset change
+        document.getElementById('colorPreset').addEventListener('change', (e) => {
+            const presetName = e.target.value;
+            if (presetName !== 'custom') {
+                this.applyColorPreset(presetName);
+            }
         });
         
         // Grid width change
@@ -51,24 +117,44 @@ class TileDiagram {
             this.resetGrid();
         });
         
-        // Object color picker
-        document.getElementById('objectColor').addEventListener('input', (e) => {
-            this.currentObjectColor = e.target.value;
-        });
-        
-        document.getElementById('strokeColor').addEventListener('input', (e) => {
-            this.colors.stroke = e.target.value;
+        // Tile color pickers
+        document.getElementById('tileColor').addEventListener('input', (e) => {
+            this.colors.tile = e.target.value;
             this.renderTiles();
+            this.setPresetToCustom();
         });
         
+        document.getElementById('tileStroke').addEventListener('input', (e) => {
+            this.colors.tileStroke = e.target.value;
+            this.renderTiles();
+            this.setPresetToCustom();
+        });
+        
+        // X color picker
+        document.getElementById('xColor').addEventListener('input', (e) => {
+            this.colors.x = e.target.value;
+            this.renderXMarkers();
+            this.setPresetToCustom();
+        });
+        
+        // Outline color picker
+        document.getElementById('outlineColor').addEventListener('input', (e) => {
+            this.colors.outline = e.target.value;
+            this.renderOutlines();
+            this.setPresetToCustom();
+        });
+        
+        // Checkerboard color pickers
         document.getElementById('checkerLight').addEventListener('input', (e) => {
             this.colors.checkerLight = e.target.value;
             this.renderGrid();
+            this.setPresetToCustom();
         });
         
         document.getElementById('checkerDark').addEventListener('input', (e) => {
             this.colors.checkerDark = e.target.value;
             this.renderGrid();
+            this.setPresetToCustom();
         });
         
         // Clear tiles button
@@ -85,6 +171,34 @@ class TileDiagram {
         document.getElementById('copyBtn').addEventListener('click', () => {
             this.copyToClipboard();
         });
+    }
+    
+    setPresetToCustom() {
+        document.getElementById('colorPreset').value = 'custom';
+    }
+    
+    applyColorPreset(presetName) {
+        const preset = this.colorPresets[presetName];
+        if (!preset) return;
+        
+        // Apply preset colors
+        this.colors.tile = preset.tile;
+        this.colors.tileStroke = preset.tileStroke;
+        this.colors.x = preset.x;
+        this.colors.outline = preset.outline;
+        this.colors.checkerLight = preset.checkerLight;
+        this.colors.checkerDark = preset.checkerDark;
+        
+        // Update color pickers
+        document.getElementById('tileColor').value = preset.tile;
+        document.getElementById('tileStroke').value = preset.tileStroke;
+        document.getElementById('xColor').value = preset.x;
+        document.getElementById('outlineColor').value = preset.outline;
+        document.getElementById('checkerLight').value = preset.checkerLight;
+        document.getElementById('checkerDark').value = preset.checkerDark;
+        
+        // Re-render everything
+        this.renderGrid();
     }
     
     resetGrid() {
@@ -227,11 +341,10 @@ class TileDiagram {
             // Remove existing X marker
             this.xMarkers.splice(existingIndex, 1);
         } else {
-            // Add new X marker with current color
+            // Add new X marker (no color stored, uses global X color)
             this.xMarkers.push({
                 row: row,
-                col: col,
-                color: this.currentObjectColor
+                col: col
             });
         }
         
@@ -266,8 +379,8 @@ class TileDiagram {
             squares: [
                 { row: row1, col: col1 },
                 { row: row2, col: col2 }
-            ],
-            color: this.currentObjectColor // Store color with the tile
+            ]
+            // No color stored - uses global tile colors when rendering
         };
         this.tiles.push(tile);
     }
@@ -328,8 +441,8 @@ class TileDiagram {
             rect.setAttribute('height', height);
             rect.setAttribute('rx', 8);
             rect.setAttribute('ry', 8);
-            rect.setAttribute('fill', tile.color); // Use tile's stored color
-            rect.setAttribute('stroke', this.colors.stroke);
+            rect.setAttribute('fill', this.colors.tile); // Use global tile color
+            rect.setAttribute('stroke', this.colors.tileStroke);
             rect.setAttribute('stroke-width', '3');
             rect.setAttribute('class', 'tile');
             
@@ -359,7 +472,7 @@ class TileDiagram {
             line1.setAttribute('y1', centerY - offset);
             line1.setAttribute('x2', centerX + offset);
             line1.setAttribute('y2', centerY + offset);
-            line1.setAttribute('stroke', marker.color); // Use marker's stored color
+            line1.setAttribute('stroke', this.colors.x); // Use global X color
             line1.setAttribute('stroke-width', '4');
             line1.setAttribute('stroke-linecap', 'round');
             
@@ -369,7 +482,7 @@ class TileDiagram {
             line2.setAttribute('y1', centerY - offset);
             line2.setAttribute('x2', centerX - offset);
             line2.setAttribute('y2', centerY + offset);
-            line2.setAttribute('stroke', marker.color); // Use marker's stored color
+            line2.setAttribute('stroke', this.colors.x); // Use global X color
             line2.setAttribute('stroke-width', '4');
             line2.setAttribute('stroke-linecap', 'round');
             
@@ -396,8 +509,8 @@ class TileDiagram {
             x,
             y,
             width,
-            height,
-            color: this.currentObjectColor
+            height
+            // No color stored - uses global outline color when rendering
         };
         this.outlines.push(outline);
     }
@@ -415,7 +528,7 @@ class TileDiagram {
             rect.setAttribute('width', outline.width);
             rect.setAttribute('height', outline.height);
             rect.setAttribute('fill', 'none');
-            rect.setAttribute('stroke', outline.color);
+            rect.setAttribute('stroke', this.colors.outline); // Use global outline color
             rect.setAttribute('stroke-width', '3');
             rect.setAttribute('class', 'outline');
             

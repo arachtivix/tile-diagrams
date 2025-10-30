@@ -45,6 +45,21 @@ header p {
     border-radius: 8px;
 }
 
+.color-section-title {
+    width: 100%;
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    margin: 10px 0 5px 0;
+    padding-top: 10px;
+    border-top: 1px solid #ddd;
+}
+
+.color-section-title:first-of-type {
+    border-top: none;
+    padding-top: 0;
+}
+
 .control-group {
     display: flex;
     align-items: center;
@@ -63,6 +78,15 @@ header p {
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
+}
+
+.control-group select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
 }
 
 .control-group input[type="color"] {

@@ -42,15 +42,44 @@
             </div>
             
             <div class="control-group">
-                <label for="objectColor">Object Color:</label>
-                <input type="color" id="objectColor" value="#4CAF50">
+                <label for="colorPreset">Color Preset:</label>
+                <select id="colorPreset">
+                    <option value="custom">Custom</option>
+                    <option value="forest">Forest</option>
+                    <option value="ocean">Ocean</option>
+                    <option value="sunset">Sunset</option>
+                    <option value="lavender">Lavender</option>
+                    <option value="autumn">Autumn</option>
+                    <option value="monochrome">Monochrome</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <h3 class="color-section-title">Tile Colors</h3>
+            <div class="control-group">
+                <label for="tileColor">Fill:</label>
+                <input type="color" id="tileColor" value="#4CAF50">
             </div>
             
             <div class="control-group">
-                <label for="strokeColor">Stroke Color:</label>
-                <input type="color" id="strokeColor" value="#2E7D32">
+                <label for="tileStroke">Stroke:</label>
+                <input type="color" id="tileStroke" value="#2E7D32">
             </div>
             
+            <h3 class="color-section-title">X Marker Colors</h3>
+            <div class="control-group">
+                <label for="xColor">Color:</label>
+                <input type="color" id="xColor" value="#E91E63">
+            </div>
+            
+            <h3 class="color-section-title">Outline Colors</h3>
+            <div class="control-group">
+                <label for="outlineColor">Color:</label>
+                <input type="color" id="outlineColor" value="#2196F3">
+            </div>
+            
+            <h3 class="color-section-title">Checkerboard Colors</h3>
             <div class="control-group">
                 <label for="checkerLight">Light Square:</label>
                 <input type="color" id="checkerLight" value="#F0D9B5">
