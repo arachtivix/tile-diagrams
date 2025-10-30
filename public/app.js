@@ -196,6 +196,7 @@ class TileDiagram {
                     this.highlightSquare(this.selectedSquare.row, this.selectedSquare.col, false);
                     this.selectedSquare = null;
                     this.renderTiles();
+                    this.renderOutlines(); // Keep outlines on top
                 } else {
                     // Not adjacent, select this as new first square
                     this.highlightSquare(this.selectedSquare.row, this.selectedSquare.col, false);
@@ -235,6 +236,7 @@ class TileDiagram {
         }
         
         this.renderXMarkers();
+        this.renderOutlines(); // Keep outlines on top
     }
     
     areAdjacent(row1, col1, row2, col2) {
