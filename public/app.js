@@ -120,6 +120,7 @@ class TileDiagram {
         // Tile color pickers
         document.getElementById('tileColor').addEventListener('input', (e) => {
             this.colors.tile = e.target.value;
+            this.renderTiles();
             this.setPresetToCustom();
         });
         
@@ -132,12 +133,14 @@ class TileDiagram {
         // X color picker
         document.getElementById('xColor').addEventListener('input', (e) => {
             this.colors.x = e.target.value;
+            this.renderXMarkers();
             this.setPresetToCustom();
         });
         
         // Outline color picker
         document.getElementById('outlineColor').addEventListener('input', (e) => {
             this.colors.outline = e.target.value;
+            this.renderOutlines();
             this.setPresetToCustom();
         });
         
@@ -338,11 +341,10 @@ class TileDiagram {
             // Remove existing X marker
             this.xMarkers.splice(existingIndex, 1);
         } else {
-            // Add new X marker with current X color
+            // Add new X marker (no color stored, uses global X color)
             this.xMarkers.push({
                 row: row,
-                col: col,
-                color: this.colors.x
+                col: col
             });
         }
         
@@ -377,8 +379,8 @@ class TileDiagram {
             squares: [
                 { row: row1, col: col1 },
                 { row: row2, col: col2 }
-            ],
-            color: this.colors.tile // Store tile fill color with the tile
+            ]
+            // No color stored - uses global tile colors when rendering
         };
         this.tiles.push(tile);
     }
@@ -439,7 +441,7 @@ class TileDiagram {
             rect.setAttribute('height', height);
             rect.setAttribute('rx', 8);
             rect.setAttribute('ry', 8);
-            rect.setAttribute('fill', tile.color); // Use tile's stored color
+            rect.setAttribute('fill', this.colors.tile); // Use global tile color
             rect.setAttribute('stroke', this.colors.tileStroke);
             rect.setAttribute('stroke-width', '3');
             rect.setAttribute('class', 'tile');
@@ -470,7 +472,7 @@ class TileDiagram {
             line1.setAttribute('y1', centerY - offset);
             line1.setAttribute('x2', centerX + offset);
             line1.setAttribute('y2', centerY + offset);
-            line1.setAttribute('stroke', marker.color); // Use marker's stored color
+            line1.setAttribute('stroke', this.colors.x); // Use global X color
             line1.setAttribute('stroke-width', '4');
             line1.setAttribute('stroke-linecap', 'round');
             
@@ -480,7 +482,7 @@ class TileDiagram {
             line2.setAttribute('y1', centerY - offset);
             line2.setAttribute('x2', centerX - offset);
             line2.setAttribute('y2', centerY + offset);
-            line2.setAttribute('stroke', marker.color); // Use marker's stored color
+            line2.setAttribute('stroke', this.colors.x); // Use global X color
             line2.setAttribute('stroke-width', '4');
             line2.setAttribute('stroke-linecap', 'round');
             
@@ -507,8 +509,8 @@ class TileDiagram {
             x,
             y,
             width,
-            height,
-            color: this.colors.outline
+            height
+            // No color stored - uses global outline color when rendering
         };
         this.outlines.push(outline);
     }
@@ -526,7 +528,7 @@ class TileDiagram {
             rect.setAttribute('width', outline.width);
             rect.setAttribute('height', outline.height);
             rect.setAttribute('fill', 'none');
-            rect.setAttribute('stroke', outline.color);
+            rect.setAttribute('stroke', this.colors.outline); // Use global outline color
             rect.setAttribute('stroke-width', '3');
             rect.setAttribute('class', 'outline');
             
